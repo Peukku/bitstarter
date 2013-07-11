@@ -46,12 +46,15 @@ var cheerioHtmlFile = function(htmlfile) {
     return cheerio.load(fs.readFileSync(htmlfile));
 };
 
+var cheerioRawHTML = function(content) {
+    return cheerio.load(content);
+};
+
 var loadChecks = function(checksfile) {
     return JSON.parse(fs.readFileSync(checksfile));
 };
 
-var checkHtmlFile = function(htmlfile, checksfile) {
-    $ = cheerioHtmlFile(htmlfile);
+var doChecks = function ($, checksfile){
     var checks = loadChecks(checksfile).sort();
     var out = {};
     for(var ii in checks) {
@@ -61,15 +64,14 @@ var checkHtmlFile = function(htmlfile, checksfile) {
     return out;
 };
 
+var checkHtmlFile = function(htmlfile, checksfile) {
+    $ = cheerioHtmlFile(htmlfile);
+    return doChecks($, checksfile);
+};
+
 var checkUrl = function(content, checksfile) {
-    $ = cheerio.load(content);
-    var checks = loadChecks(checksfile).sort();
-    var out = {};
-    for(var ii in checks) {
-	var present = $(checks[ii]).length > 0;
-	out[checks[ii]] = present;
-    }
-    return out;
+    $ = cheerioRawHTML(content);
+    return doChecks($, checksfile);
 };
 
 var clone = function(fn) {
